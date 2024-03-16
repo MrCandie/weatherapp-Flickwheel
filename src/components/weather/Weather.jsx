@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "./weather.css";
+import { toast } from "react-toastify";
 
 function ReusableElement({ title, text, src, onClick }) {
   return (
@@ -25,6 +26,28 @@ export default function Weather() {
   const [unit, setUnit] = useState("km/hr");
   const [tempUnit, setTempUnit] = useState("°C");
   const [temp, setTemp] = useState("");
+  const [src, setSrc] = useState("");
+
+  useEffect(() => {
+    const initialTemp = initial
+      ? data?.main?.temp
+        ? Math.round(+data?.main?.temp - 273.15)
+        : 0
+      : detail?.current?.temperature;
+
+    if (initialTemp <= 0) {
+      setSrc("/snow.png");
+    } else if (initialTemp > 25 && initialTemp <= 30) {
+      setSrc("/cloud.png");
+    } else if (initialTemp > 1 && initialTemp <= 25) {
+      setSrc("/rain.png");
+    } else if (initialTemp > 30) {
+      setSrc("/clear.png");
+    }
+    console.log(initialTemp);
+  }, [data, initial, detail]);
+
+  console.log(src);
 
   useEffect(() => {
     setSpeed(initial ? data?.wind?.speed : detail?.current?.wind_speed);
@@ -68,11 +91,28 @@ export default function Weather() {
           console.error("Geolocation is not supported by this browser.");
         }
       } catch (error) {
-        console.log(error);
+        toast.error(error?.response?.data.message || "something went wrong");
       }
     }
     fetchData();
   }, []);
+
+  async function forecastHandler() {
+    try {
+      const response = await axios.get(
+        `http://api.weatherstack.com/forecast?access_key=${api_key}&query=New York&forecast_days=1&hourly=1`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const data = response.data;
+      console.log(data);
+    } catch (error) {
+      toast?.error(error?.response?.data.message || "something went wrong");
+    }
+  }
 
   async function searchHandler() {
     if (!search) {
@@ -92,27 +132,12 @@ export default function Weather() {
       setUnit("km/hr");
       setTempUnit("°C");
       setInitial(false);
+      toast.success("Successful");
+      setSearch("");
     } catch (error) {
-      console.log(error);
+      toast.error(error?.response?.data.message || "something went wrong");
     }
   }
-
-  useEffect(() => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const lat = position.coords.latitude;
-          const lng = position.coords.longitude;
-          console.log(`Latitude: ${lat}, longitude: ${lng}`);
-        },
-        (error) => {
-          console.error("Error getting user location:", error);
-        }
-      );
-    } else {
-      console.error("Geolocation is not supported by this browser.");
-    }
-  }, []);
 
   return (
     <div className="container">
@@ -129,7 +154,7 @@ export default function Weather() {
       </div>
 
       <div className="weather-image">
-        <img src="/cloud.png" alt="weather image" />
+        <img src={src} alt="weather image" />
       </div>
 
       <div
@@ -153,7 +178,7 @@ export default function Weather() {
         {temp}
         {tempUnit}
       </div>
-      <div className="weather-descriptions">
+      <div onClick={forecastHandler} className="weather-descriptions">
         {initial
           ? data?.weather
             ? data?.weather[0]?.description
