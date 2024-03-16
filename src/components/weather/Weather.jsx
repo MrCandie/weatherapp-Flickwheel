@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import "./weather.css";
 
-function ReusableElement({ title, text, src }) {
+function ReusableElement({ title, text, src, onClick }) {
   return (
-    <div className="element">
+    <div onClick={onClick} className="element">
       <img src={src} alt="" />
       <div className="data">
         <div className="humidity-percent">{text}</div>
@@ -19,6 +19,26 @@ export default function Weather() {
   const open_weather_api_key = "0656a9ce39cdaae77b2656c4cc70e069";
   const [search, setSearch] = useState("");
   const [data, setData] = useState("");
+  const [detail, setDetail] = useState("");
+  const [initial, setInitial] = useState(true);
+  const [speed, setSpeed] = useState("");
+  const [unit, setUnit] = useState("km/hr");
+  const [tempUnit, setTempUnit] = useState("°C");
+  const [temp, setTemp] = useState("");
+
+  useEffect(() => {
+    setSpeed(initial ? data?.wind?.speed : detail?.current?.wind_speed);
+  }, [data, detail, initial]);
+
+  useEffect(() => {
+    setTemp(
+      initial
+        ? data?.main?.temp
+          ? Math.round(+data?.main?.temp - 273.15)
+          : 0
+        : detail?.current?.temperature
+    );
+  }, [data, detail, initial]);
 
   useEffect(() => {
     async function fetchData() {
@@ -38,6 +58,7 @@ export default function Weather() {
               );
               const data = response.data;
               setData(data);
+              setInitial(true);
             },
             (error) => {
               console.error("Error getting user location:", error);
@@ -67,7 +88,10 @@ export default function Weather() {
         }
       );
       const data = response.data;
-      setData(data);
+      setDetail(data);
+      setUnit("km/hr");
+      setTempUnit("°C");
+      setInitial(false);
     } catch (error) {
       console.log(error);
     }
@@ -108,26 +132,65 @@ export default function Weather() {
         <img src="/cloud.png" alt="weather image" />
       </div>
 
-      <div className="weather-temp">
-        {data?.main?.temp ? Math.round(+data?.main?.temp - 273.15) : 0}°C
+      <div
+        onClick={() => {
+          const initialTemp = initial
+            ? data?.main?.temp
+              ? Math.round(+data?.main?.temp - 273.15)
+              : 0
+            : detail?.current?.temperature;
+          if (tempUnit === "°C") {
+            const fahrent = initial * 1.8 + 32;
+            setTemp(fahrent);
+            setTempUnit("°F");
+          } else {
+            setTemp(initialTemp);
+            setTempUnit("°C");
+          }
+        }}
+        className="weather-temp"
+      >
+        {temp}
+        {tempUnit}
       </div>
       <div className="weather-descriptions">
-        {data?.weather ? data?.weather[0]?.description : ""}
+        {initial
+          ? data?.weather
+            ? data?.weather[0]?.description
+            : ""
+          : detail?.current?.weather_descriptions[0]}
       </div>
 
       <div className="weather-location">
-        {data?.name}, {data?.sys?.country}
+        {initial ? data?.name : detail?.location?.name},{" "}
+        {initial ? data?.sys?.country : detail?.location?.country}
       </div>
 
       <div className="data-container">
         <ReusableElement
           title="Humidity"
-          text={`${data?.main?.humidity}%`}
+          text={`${
+            initial ? data?.main?.humidity : detail?.current?.humidity
+          }%`}
           src="/humidity.png"
         />
         <ReusableElement
+          onClick={() => {
+            console.log(123);
+            const speed = initial
+              ? data?.wind?.speed
+              : detail?.current?.wind_speed;
+            if (unit === "m/hr") {
+              console.log(speed);
+              setSpeed(speed);
+              setUnit("km/hr");
+            } else {
+              setSpeed(speed * 1000);
+              setUnit("m/hr");
+            }
+          }}
           title="Wind Speed"
-          text={`${data?.wind?.speed} km/hr`}
+          text={`${speed} ${unit}`}
           src="/wind.png"
         />
       </div>

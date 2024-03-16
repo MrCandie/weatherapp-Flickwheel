@@ -53,6 +53,7 @@
   color: white;
   font-size: 120px;
   font-weight: 400;
+  cursor: pointer;
 }
 .weather-location {
   display: flex;
@@ -78,6 +79,7 @@
   display: flex;
   align-items: flex-start;
   gap: 12px;
+  cursor: pointer;
 }
 
 .data {
