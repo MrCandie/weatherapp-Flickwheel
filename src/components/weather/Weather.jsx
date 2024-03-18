@@ -48,43 +48,48 @@ export default function Weather() {
 
   useEffect(() => {
     if (initial) {
-      if (data?.weather[0].icon === "01d" || data?.weather[0].icon === "01n") {
-        setSrc("/clear.png");
-      } else if (
-        data?.weather[0].icon === "02d" ||
-        data?.weather[0].icon === "02n"
-      ) {
-        setSrc("/cloud.png");
-      } else if (
-        data?.weather[0].icon === "03d" ||
-        data?.weather[0].icon === "03n"
-      ) {
-        setSrc("/drizzle.png");
-      } else if (
-        data?.weather[0].icon === "04d" ||
-        data?.weather[0].icon === "04n"
-      ) {
-        setSrc("/drizzle.png");
-      } else if (
-        data?.weather[0].icon === "09d" ||
-        data?.weather[0].icon === "09n"
-      ) {
-        setSrc("/rain.png");
-      } else if (
-        data?.weather[0].icon === "10d" ||
-        data?.weather[0].icon === "10n"
-      ) {
-        setSrc("/rain.png");
-      } else if (
-        data?.weather[0].icon === "13d" ||
-        data?.weather[0].icon === "13n"
-      ) {
-        setSrc("/snow.png");
+      if (data?.weather) {
+        if (
+          data?.weather[0]?.icon === "01d" ||
+          data?.weather[0].icon === "01n"
+        ) {
+          setSrc("/clear.png");
+        } else if (
+          data?.weather[0]?.icon === "02d" ||
+          data?.weather[0].icon === "02n"
+        ) {
+          setSrc("/cloud.png");
+        } else if (
+          data?.weather[0]?.icon === "03d" ||
+          data?.weather[0]?.icon === "03n"
+        ) {
+          setSrc("/drizzle.png");
+        } else if (
+          data?.weather[0]?.icon === "04d" ||
+          data?.weather[0]?.icon === "04n"
+        ) {
+          setSrc("/drizzle.png");
+        } else if (
+          data?.weather[0]?.icon === "09d" ||
+          data?.weather[0]?.icon === "09n"
+        ) {
+          setSrc("/rain.png");
+        } else if (
+          data?.weather[0]?.icon === "10d" ||
+          data?.weather[0]?.icon === "10n"
+        ) {
+          setSrc("/rain.png");
+        } else if (
+          data?.weather[0]?.icon === "13d" ||
+          data?.weather[0]?.icon === "13n"
+        ) {
+          setSrc("/snow.png");
+        } else {
+          setSrc("/clear.png");
+        }
       } else {
-        setSrc("/clear.png");
+        setSrc(detail?.current?.weather_icons[0]);
       }
-    } else {
-      setSrc(detail?.current?.weather_icons[0]);
     }
   }, [data, initial, detail]);
 
