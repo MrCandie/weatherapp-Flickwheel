@@ -2,21 +2,18 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import "./weather.css";
 import { toast } from "react-toastify";
+import Search from "./Search";
+import HumidityAndWindspeed from "./HumidityAndWindspeed";
+import Temperature from "./Temperature";
 
-function ReusableElement({ title, text, src, onClick }) {
-  return (
-    <div onClick={onClick} className="element">
-      <img src={src} alt="" />
-      <div className="data">
-        <div className="humidity-percent">{text}</div>
-        <div className="text">{title}</div>
-      </div>
-    </div>
-  );
-}
+// ps: i had to use two weather api provider
+
+// openweather to get user's current weather information (BECAUSE THE QUERY ALLOWS FOR THE USERS LATITUDE AND LONGITUDE, and weatherstack only takes in the city name as query)
+
+// weatherstack to get weather information for the location searched for
 
 export default function Weather() {
-  const api_key = "ddb927e66d09d3cc100d73bf4ddad767";
+  const weather_stack_api_key = "ddb927e66d09d3cc100d73bf4ddad767";
   const open_weather_api_key = "0656a9ce39cdaae77b2656c4cc70e069";
 
   // state to get entered search value
@@ -46,6 +43,7 @@ export default function Weather() {
   // state for temperature icon
   const [src, setSrc] = useState("");
 
+  // weather icons
   useEffect(() => {
     if (initial) {
       if (data?.weather) {
@@ -142,22 +140,6 @@ export default function Weather() {
     fetchData();
   }, []);
 
-  async function forecastHandler() {
-    try {
-      const response = await axios.get(
-        `http://api.weatherstack.com/forecast?access_key=${api_key}&query=New York&forecast_days=1&hourly=1`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      const data = response.data;
-    } catch (error) {
-      toast?.error(error?.response?.data.message || "something went wrong");
-    }
-  }
-
   async function searchHandler() {
     if (!search) {
       toast.warning("Enter a valid address");
@@ -165,7 +147,7 @@ export default function Weather() {
     }
     try {
       const response = await axios.get(
-        `http://api.weatherstack.com/current?access_key=${api_key}&query=${search}`,
+        `http://api.weatherstack.com/current?access_key=${weather_stack_api_key}&query=${search}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -173,6 +155,10 @@ export default function Weather() {
         }
       );
       const data = response.data;
+      if (data?.success === false) {
+        toast.error(data?.error?.info);
+        return;
+      }
       setDetail(data);
       setUnit("km/hr");
       setTempUnit("°C");
@@ -184,84 +170,64 @@ export default function Weather() {
     }
   }
 
+  function temperatureToggle() {
+    const initialTemp = initial
+      ? data?.main?.temp
+        ? Math.round(+data?.main?.temp - 273.15)
+        : 0
+      : detail?.current?.temperature;
+    if (tempUnit === "°C") {
+      const fahrent = initial * 1.8 + 32;
+      setTemp(fahrent);
+      setTempUnit("°F");
+    } else {
+      setTemp(initialTemp);
+      setTempUnit("°C");
+    }
+  }
+
   return (
-    <div className="container">
-      <div className="search">
-        <input
-          onChange={(e) => setSearch(e.target.value)}
-          value={search}
-          type="text"
-          placeholder="Search Address"
+    <>
+      <div>Click on temperature and wndspeed to toggle their units</div>
+      <div className="container">
+        <Search
+          search={search}
+          setSearch={setSearch}
+          searchHandler={searchHandler}
         />
-        <button onClick={searchHandler}>
-          <img src="/search.png" alt="search" />
-        </button>
-      </div>
 
-      <div className="weather-image">
-        <img src={src} alt="weather image" />
-      </div>
+        <div className="weather-image">
+          <img src={src} alt="weather image" />
+        </div>
 
-      <div
-        onClick={() => {
-          const initialTemp = initial
-            ? data?.main?.temp
-              ? Math.round(+data?.main?.temp - 273.15)
-              : 0
-            : detail?.current?.temperature;
-          if (tempUnit === "°C") {
-            const fahrent = initial * 1.8 + 32;
-            setTemp(fahrent);
-            setTempUnit("°F");
-          } else {
-            setTemp(initialTemp);
-            setTempUnit("°C");
-          }
-        }}
-        className="weather-temp"
-      >
-        {temp}
-        {tempUnit}
-      </div>
-      <div onClick={forecastHandler} className="weather-descriptions">
-        {initial
-          ? data?.weather
-            ? data?.weather[0]?.description
-            : ""
-          : detail?.current?.weather_descriptions[0]}
-      </div>
-
-      <div className="weather-location">
-        {initial ? data?.name : detail?.location?.name},{" "}
-        {initial ? data?.sys?.country : detail?.location?.country}
-      </div>
-
-      <div className="data-container">
-        <ReusableElement
-          title="Humidity"
-          text={`${
-            initial ? data?.main?.humidity : detail?.current?.humidity
-          }%`}
-          src="/humidity.png"
+        <Temperature
+          temp={temp}
+          tempUnit={tempUnit}
+          temperatureToggle={temperatureToggle}
         />
-        <ReusableElement
-          onClick={() => {
-            const speed = initial
-              ? data?.wind?.speed
-              : detail?.current?.wind_speed;
-            if (unit === "m/hr") {
-              setSpeed(speed);
-              setUnit("km/hr");
-            } else {
-              setSpeed(speed * 1000);
-              setUnit("m/hr");
-            }
-          }}
-          title="Wind Speed"
-          text={`${speed} ${unit}`}
-          src="/wind.png"
+        <div className="weather-descriptions">
+          {initial
+            ? data?.weather
+              ? data?.weather[0]?.description
+              : ""
+            : detail?.current?.weather_descriptions[0]}
+        </div>
+
+        <div className="weather-location">
+          {initial ? data?.name : detail?.location?.name},{" "}
+          {initial ? data?.sys?.country : detail?.location?.country}
+        </div>
+
+        <HumidityAndWindspeed
+          initial={initial}
+          data={data}
+          detail={detail}
+          speed={speed}
+          setSpeed={setSpeed}
+          unit={unit}
+          setUnit={setUnit}
         />
       </div>
-    </div>
+    </>
   );
 }

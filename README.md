@@ -1,8 +1,31 @@
-# React + Vite
+# FLICKWHEEL FRONTEND DEVELOPER ASSESSMENT
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This todo app was built with Reactjs and Typescript CHAKRA-UI;
 
-Currently, two official plugins are available:
+## Starting this app
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+```js
+npm start
+```
+
+To start this app.
+
+## APPLICATION URL
+
+https://weatherapp-flickwheel.vercel.app/
+
+## Project Github
+
+https://github.com/MrCandie/weatherapp-Flickwheel
+
+## My Github URL
+
+https://github.com/MrCandie
+
+## Portfolio URL
+
+https://mrcandie.com
+
+To toggle between degrees and fahrenheit, CLICK ON THE TEMPERATURE
+
+To toggle windspeed between km/hr and m/hr, CLICK ON THE WINDSPEED
